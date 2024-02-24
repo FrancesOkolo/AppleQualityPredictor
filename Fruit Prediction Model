@@ -1,0 +1,40 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+import joblib
+
+# Step 1: Data Preprocessing
+# Load the dataset
+data = pd.read_csv(r"C:\Users\Awele\Downloads\apple_quality.csv")
+
+# Handle missing data if any
+data.dropna(inplace=True)
+
+# Encode categorical variables if needed (e.g., using one-hot encoding or label encoding)
+
+# Split the dataset into features (X) and target variable (y)
+X = data.drop(['A_id', 'Quality'], axis=1)
+y = data['Quality']
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 2: Model Selection
+# Choose a classification algorithm (e.g., RandomForestClassifier)
+model = RandomForestClassifier()
+
+# Step 3: Training the Model
+# Train the model on the training dataset
+model.fit(X_train, y_train)
+
+# Step 4: Model Evaluation
+# Evaluate the model on the testing dataset
+y_pred = model.predict(X_test)
+print(classification_report(y_test, y_pred))
+
+# Step 6: Save the trained model to a file
+joblib.dump(model, 'fruit_classification_model.joblib')
+
+# Step 7: Deployment
+# Deploy the model for real-world use
