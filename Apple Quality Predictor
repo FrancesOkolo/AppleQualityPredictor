@@ -1,0 +1,88 @@
+import numpy as np
+import joblib
+import PySimpleGUI as sg
+
+# Load the trained model
+model = joblib.load('fruit_classification_model.joblib')
+
+# Function to predict apple quality
+def predict_apple_quality(attributes):
+    # Reshape the attributes array to match the input format of the model
+    attributes = np.array(attributes).reshape(1, -1)
+    # Predict the quality using the loaded model
+    prediction = model.predict(attributes)
+    return prediction[0]
+
+# Validate input value within range
+def validate_input(value):
+    try:
+        value = float(value)
+        if -10 <= value <= 10:
+            return True
+    except ValueError:
+        pass
+    return False
+
+# Main function
+def main():
+    # Define the layout for the GUI
+    layout = [
+        [sg.Text('Apple Quality Prediction', font=('Helvetica', 25), justification='center')],
+        [sg.Text('Enter the following attributes of the apple (-10 to 10):', font=('Helvetica', 14), justification='center')],
+        [sg.Text('Size:', size=(10, 1)), sg.InputText(key='size', size=(20, 1), tooltip='Enter a value between -10 and 10')],
+        [sg.Text('Weight:', size=(10, 1)), sg.InputText(key='weight', size=(20, 1), tooltip='Enter a value between -10 and 10')],
+        [sg.Text('Sweetness:', size=(10, 1)), sg.InputText(key='sweetness', size=(20, 1), tooltip='Enter a value between -10 and 10')],
+        [sg.Text('Crunchiness:', size=(10, 1)), sg.InputText(key='crunchiness', size=(20, 1), tooltip='Enter a value between -10 and 10')],
+        [sg.Text('Juiciness:', size=(10, 1)), sg.InputText(key='juiciness', size=(20, 1), tooltip='Enter a value between -10 and 10')],
+        [sg.Text('Ripeness:', size=(10, 1)), sg.InputText(key='ripeness', size=(20, 1), tooltip='Enter a value between -10 and 10')],
+        [sg.Text('Acidity:', size=(10, 1)), sg.InputText(key='acidity', size=(20, 1), tooltip='Enter a value between -10 and 10')],
+        [sg.Button('Predict', size=(10, 1)), sg.Button('Clear', size=(10, 1)), sg.Button('Exit', size=(10, 1))],
+        [sg.Text(size=(50, 1), key='output', font=('Helvetica', 12), justification='center', text_color='black')],
+    ]
+
+    # Create the GUI window
+    window = sg.Window('Apple Quality Prediction', layout, resizable=False)
+
+    # Event loop to handle GUI events
+    while True:
+        event, values = window.read()
+
+        if event == sg.WINDOW_CLOSED or event == 'Exit':
+            break
+
+        if event == 'Predict':
+            # Validate user input
+            invalid_inputs = []
+            attributes = []
+            for key, value in values.items():
+                if validate_input(value):
+                    attributes.append(float(value))
+                else:
+                    invalid_inputs.append(key)
+
+            # If there are invalid inputs, display error message
+            if invalid_inputs:
+                error_message = ', '.join([f'{key.capitalize()}' for key in invalid_inputs])
+                window['output'].update(f'Invalid input for {error_message}. Please enter a number between -10 and 10.', text_color='red')
+                continue
+
+            # Predict apple quality
+            quality = predict_apple_quality(attributes)
+
+            # Output the predicted quality
+            output_text = f'Predicted Quality: {quality:.2f}'
+            if not (0 <= quality <= 10):
+                output_text += ' (Outside expected range)'
+            window['output'].update(output_text, text_color='green')
+
+        if event == 'Clear':
+            # Clear input fields and output
+            window['output'].update('')
+            for key in values:
+                window[key].update('')
+
+    # Close the GUI window
+    window.close()
+
+if __name__ == "__main__":
+    main()
